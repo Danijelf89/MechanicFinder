@@ -1,5 +1,5 @@
 # Build Angular aplikacije i objava na GitHub Pages pri svakom push-u na main.
-# Adresa: https://danijelf89.github.io/MechanicFinder/
+# Adresa: https://servisradar.rs/
 name: Deploy na GitHub Pages
 
 on:
@@ -29,12 +29,15 @@ jobs:
 
       - run: npm ci
 
-      # base-href mora da odgovara imenu repoa jer sajt živi na /MechanicFinder/
-      - run: npx ng build --configuration production --base-href /MechanicFinder/
+      # Sajt živi u korenu sopstvenog domena (servisradar.rs), pa je base-href "/"
+      - run: npx ng build --configuration production --base-href /
 
-      # GitHub Pages ne zna za Angular rute: direktno otvaranje /MechanicFinder/mapa bi dalo 404.
+      # GitHub Pages ne zna za Angular rute: direktno otvaranje /mapa bi dalo 404.
       # Kopija index.html kao 404.html učitava aplikaciju, a Angular router onda prikaže pravu stranu.
       - run: cp dist/majstor-blizu/browser/index.html dist/majstor-blizu/browser/404.html
+
+      # Custom domen za GitHub Pages
+      - run: echo "servisradar.rs" > dist/majstor-blizu/browser/CNAME
 
       - uses: actions/upload-pages-artifact@v3
         with:
