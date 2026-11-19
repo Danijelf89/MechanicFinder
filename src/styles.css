@@ -1,0 +1,146 @@
+:root {
+  --ink: #16181b;
+  --ink-2: #55595f;
+  --muted: #7a7e85;
+  --paper: #f5f3ee;
+  --line: #e4e0d7;
+  --line-2: #dedad1;
+  --accent: #e2501c;
+  --accent-press: #c94315;
+  --blue: #2e5bd8;
+  --green: #138a5e;
+  --red: #b3261e;
+  --amber: #a36a00;
+  --open-bg: #e2f4eb;
+  --soon-bg: #fdf3cf;
+  --closed-bg: #fbe8e6;
+  --font: 'Onest', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--font);
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--accent); }
+a:hover { color: var(--accent-press); }
+
+.mono { font-family: var(--mono); }
+
+.btn {
+  height: 52px;
+  padding: 0 20px;
+  border-radius: 16px;
+  border: 1.5px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.btn--primary { background: var(--accent); color: #fff; }
+.btn--primary:hover { background: var(--accent-press); color: #fff; }
+.btn--ghost { background: #fff; border-color: var(--line-2); color: var(--ink); font-weight: 600; }
+.btn--ghost:hover { border-color: #c9c5bb; color: var(--ink); }
+.btn--block { width: 100%; height: 56px; font-size: 17px; }
+.btn[disabled] { opacity: .6; cursor: default; }
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -.02em;
+}
+.logo__mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+}
+
+/* Skeleton */
+.sk { display: block; border-radius: 8px; background: linear-gradient(90deg, #ebe8e1 0%, #f6f4ef 50%, #ebe8e1 100%); background-size: 200% 100%; animation: sk 1.2s linear infinite; }
+@keyframes sk { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* Leaflet markers (rendered outside Angular components) */
+.leaflet-container { font-family: var(--font); background: #e7e4dc; }
+.mb-icon { background: none; border: 0; }
+/* Kompaktan pin: bela "kapljica" sa obojenim krugom i slovom. */
+.pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, calc(-100% - 6px));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+  font: 600 13px/1 var(--font);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform .15s;
+}
+.pin::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-bottom: 0;
+  border-top-color: #fff;
+}
+.pin:not(.pin--sel):hover { transform: translate(-50%, calc(-100% - 6px)) scale(1.15); }
+.pin__dot {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 50%;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+.pin--sel {
+  padding: 4px 12px 4px 4px;
+  background: var(--ink);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
+}
+.pin--sel::after { border-top-color: var(--ink); }
+.pin__label { max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+.pin__km { font-family: var(--mono); font-size: 12px; opacity: .7; }
+.me-dot {
+  position: absolute;
+  left: -11px;
+  top: -11px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--blue);
+  border: 4px solid #fff;
+  box-shadow: 0 0 0 10px rgba(46, 91, 216, .18);
+}
+@media (max-width: 899px) {
+  .leaflet-control-zoom { display: none; }
+}

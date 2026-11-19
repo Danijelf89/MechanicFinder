@@ -1,0 +1,24 @@
+<main class="onb">
+  <div class="bar">
+    <app-logo />
+    <app-lang-switch [dark]="true" />
+  </div>
+
+  <div class="types">
+    @for (t of types; track t.key; let i = $index) {
+      <div class="type" [style.margin-left.px]="i * 24">
+        <span class="type__icon" [style.background]="t.color">{{ t.letter }}</span>
+        <span>
+          <strong>{{ t.label }}</strong>
+          <small>{{ t.hint }}</small>
+        </span>
+      </div>
+    }
+  </div>
+
+  <div class="text">
+    <h1>{{ i.t('onb.title') }}</h1>
+    <p>{{ i.t('onb.text') }}</p>
+    <button class="btn btn--primary btn--block" type="button" (click)="start()">{{ i.t('onb.start') }}</button>
+  </div>
+</main>

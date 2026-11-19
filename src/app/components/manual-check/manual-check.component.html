@@ -1,0 +1,131 @@
+<dialog #dialog class="dlg" aria-labelledby="mc-title" (close)="onDialogClose()" (click)="onBackdrop($event)">
+  <div class="dlg__body">
+    <header class="dlg__head">
+      <h2 id="mc-title">{{ i.t('mc.title') }}</h2>
+      <button type="button" class="dlg__close" [attr.aria-label]="i.t('common.close')" (click)="close()">×</button>
+    </header>
+
+    <form class="form" (submit)="search($event)">
+      <label class="field">
+        <span>{{ i.t('mc.name') }}</span>
+        <input
+          type="text"
+          [placeholder]="i.t('mc.namePh')"
+          autocomplete="off"
+          required
+          [value]="name()"
+          (input)="name.set($any($event.target).value)"
+        />
+      </label>
+      <label class="field">
+        <span>{{ i.t('mc.city') }}</span>
+        <select (change)="city.set($any($event.target).value)">
+          @if (location.position()) {
+            <option [value]="NEAR_ME" [selected]="city() === NEAR_ME">{{ i.t('mc.nearMe') }}</option>
+          }
+          @for (c of cities; track c.name) {
+            <option [value]="c.name" [selected]="city() === c.name">{{ c.name }}</option>
+          }
+        </select>
+      </label>
+      <button class="btn btn--primary" type="submit" [disabled]="!name().trim() || phase() === 'searching'">
+        {{ phase() === 'searching' ? i.t('mc.searching') : i.t('mc.check') }}
+      </button>
+    </form>
+
+    <div class="out" aria-live="polite">
+      @switch (phase()) {
+        @case ('results') {
+          <p class="out__hint">{{ i.t('mc.found', { n: hits().length }) }}</p>
+          <ul class="hits">
+            @for (h of hits(); track h.placeId) {
+              <li>
+                <button type="button" class="hit" (click)="open(h)">
+                  <span class="hit__body">
+                    <strong>{{ h.name }}</strong>
+                    <small>{{ h.address }}</small>
+                  </span>
+                  @if (distanceKm(h); as d) {
+                    <b class="mono">{{ km(d) }}</b>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+        }
+
+        @case ('loading-details') {
+          <p class="out__hint">{{ i.t('mc.loadingDetails') }}</p>
+        }
+
+        @case ('details') {
+          @if (details(); as d) {
+            <article class="card">
+              @if (hits().length > 1) {
+                <button type="button" class="link" (click)="back()">{{ i.t('mc.allResults') }}</button>
+              }
+              @if (d.category) {
+                <span class="tag">{{ i.t(d.category) }}</span>
+              }
+              <h3>{{ d.name }}</h3>
+              @switch (status(d)) {
+                @case ('open') { <span class="st st--open">{{ i.t('mc.openNow') }}</span> }
+                @case ('soon') { <span class="st st--soon">{{ i.t('mc.soon') }}</span> }
+                @case ('closed') { <span class="st st--closed">{{ i.t('mc.closedNow') }}</span> }
+              }
+              <dl class="facts">
+                <div><dt>{{ i.t('f.address') }}</dt><dd>{{ d.address || '—' }}</dd></div>
+                @if (distanceKm(d); as dist) {
+                  <div><dt>{{ i.t('f.distance') }}</dt><dd class="inline"><span class="mono">{{ km(dist) }}</span> · {{ i.t('common.min', { n: eta(dist) }) }}</dd></div>
+                }
+                <div>
+                  <dt>{{ i.t('f.phone') }}</dt>
+                  <dd>@if (d.phone) {<a class="mono" [href]="tel(d.phone)">{{ d.phone }}</a>} @else {<span class="none">{{ i.t('mc.noPhone') }}</span>}</dd>
+                </div>
+                <div>
+                  <dt>{{ i.t('f.hours') }}</dt>
+                  <dd>
+                    @if (d.hours) {
+                      @for (h of hoursLines(d.hours); track $index) {<span>{{ h }}</span>}
+                    } @else {
+                      <span class="none">{{ i.t('mc.noHours') }}</span>
+                    }
+                  </dd>
+                </div>
+                @if (d.website) {
+                  <div><dt>{{ i.t('f.website') }}</dt><dd><a [href]="siteUrl(d.website)" target="_blank" rel="noopener">{{ siteHost(d.website) }}</a></dd></div>
+                }
+                @if (d.email) {
+                  <div><dt>{{ i.t('f.email') }}</dt><dd><a [href]="'mailto:' + d.email">{{ d.email }}</a></dd></div>
+                }
+              </dl>
+              <div class="actions">
+                <a class="btn btn--ghost" [href]="dir(d)" target="_blank" rel="noopener">{{ i.t('act.navigate') }}</a>
+                @if (d.phone) {
+                  <a class="btn btn--primary" [href]="tel(d.phone)">{{ i.t('act.call') }}</a>
+                }
+              </div>
+              <a class="ext" [href]="googleSearchUrl(d)" target="_blank" rel="noopener">{{ i.t('mc.google') }}</a>
+              <p class="src">{{ i.t('mc.source') }}</p>
+            </article>
+          }
+        }
+
+        @case ('empty') {
+          <div class="state">
+            <p>{{ i.t('mc.notFound', { q: name().trim(), place: cityLabel() }) }}</p>
+            <p class="state__sub">{{ i.t('mc.notFoundSub') }}</p>
+            <a class="btn btn--ghost" [href]="googleMapsUrl()" target="_blank" rel="noopener">{{ i.t('mc.openGmaps') }}</a>
+          </div>
+        }
+
+        @case ('error') {
+          <div class="state">
+            <p>{{ i.t('mc.error') }}</p>
+            <a class="btn btn--ghost" [href]="googleMapsUrl()" target="_blank" rel="noopener">{{ i.t('mc.tryGmaps') }}</a>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</dialog>

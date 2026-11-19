@@ -1,0 +1,191 @@
+<div class="finder">
+  <header class="head">
+    <app-logo />
+    <app-lang-switch />
+  </header>
+
+  <div class="top">
+    <div class="top-row">
+      <button type="button" class="manual-btn" (click)="manualOpen.set(true)">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2" /><path d="M13 13l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+        {{ i.t('fd.manual') }}
+      </button>
+      <app-lang-switch class="lang-mobile" [float]="true" />
+    </div>
+    <a class="loc" routerLink="/lokacija">
+      <span class="loc__dot"></span>
+      <span class="loc__text">
+        <small>{{ i.t('fd.yourLoc') }}</small>
+        <strong>{{ location.position()?.label }}</strong>
+      </span>
+      <span class="loc__change">{{ i.t('fd.change') }}</span>
+    </a>
+
+    <div class="chips" role="tablist" [attr.aria-label]="i.t('fd.typeAria')">
+      <button type="button" class="chip" role="tab" [class.chip--on]="svc.filter() === 'svi'" [attr.aria-selected]="svc.filter() === 'svi'" (click)="setFilter('svi')">
+        {{ i.t('fd.all') }} <span class="chip__n">{{ counts().svi }}</span>
+      </button>
+      @for (t of types; track t.key) {
+        <button type="button" class="chip" role="tab" [class.chip--on]="svc.filter() === t.key" [attr.aria-selected]="svc.filter() === t.key" (click)="setFilter(t.key)">
+          <span class="chip__dot" [style.background]="t.color"></span>{{ t.label }}
+          <span class="chip__n">{{ counts()[t.key] }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <section class="sheet">
+    <div class="sheet__handle"></div>
+    <div class="sheet__head">
+      <div class="seg" role="radiogroup" [attr.aria-label]="i.t('fd.sortAria')">
+        <button type="button" role="radio" [class.seg--on]="svc.sort() === 'blizina'" [attr.aria-checked]="svc.sort() === 'blizina'" (click)="setSort('blizina')">{{ i.t('fd.nearest') }}</button>
+        <button type="button" role="radio" [class.seg--on]="svc.sort() === 'otvoreni'" [attr.aria-checked]="svc.sort() === 'otvoreni'" (click)="setSort('otvoreni')">{{ i.t('fd.openFirst') }}</button>
+      </div>
+      <label class="radius">
+        <span class="radius__label">{{ i.t('fd.within') }}</span>
+        <select [attr.aria-label]="i.t('fd.radiusAria')" (change)="setRadius($any($event.target).value)">
+          @for (r of radii; track r) {
+            <option [value]="r" [selected]="r === svc.radius()">{{ r }} km</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div class="search">
+      <svg class="search__icon" viewBox="0 0 20 20" aria-hidden="true">
+        <circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2" />
+        <path d="M13 13l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <input
+        type="search"
+        [placeholder]="i.t('fd.searchPh')"
+        [attr.aria-label]="i.t('fd.searchAria')"
+        autocomplete="off"
+        [value]="svc.query()"
+        (input)="setQuery($any($event.target).value)"
+      />
+      @if (svc.query()) {
+        <button type="button" class="search__clear" [attr.aria-label]="i.t('fd.clear')" (click)="setQuery('')">×</button>
+      }
+    </div>
+
+    <ul class="legend" [attr.aria-label]="i.t('fd.legendAria')">
+      <li><span class="legend__dot legend__dot--open"></span>{{ i.t('st.open') }}</li>
+      <li><span class="legend__dot legend__dot--soon"></span>{{ i.t('st.soonLegend') }}</li>
+      <li><span class="legend__dot legend__dot--closed"></span>{{ i.t('st.closed') }}</li>
+      <li><span class="legend__dot"></span>{{ i.t('st.unknown') }}</li>
+    </ul>
+
+    <div class="list">
+      @switch (svc.status()) {
+        @case ('error') {
+          <div class="state">
+            <p>{{ i.t('fd.error') }}</p>
+            <button class="btn btn--ghost" type="button" (click)="retry()">{{ i.t('fd.retry') }}</button>
+          </div>
+        }
+        @case ('ready') {
+          @for (m of visible(); track m.id) {
+            <button
+              type="button"
+              class="row"
+              [class.row--on]="m.id === selected()?.id"
+              [class.row--open]="openState().get(m.id) === 'open'"
+              [class.row--soon]="openState().get(m.id) === 'soon'"
+              [class.row--closed]="openState().get(m.id) === 'closed'"
+              (click)="pick(m)"
+            >
+              <span class="badge" [style.background]="T[m.type].tint" [style.color]="T[m.type].color">{{ T[m.type].letter }}</span>
+              <span class="row__body">
+                <strong>{{ m.name }}</strong>
+                <small>
+                  @switch (openState().get(m.id)) {
+                    @case ('open') { <span class="open open--yes">{{ i.t('st.open') }}</span> · }
+                    @case ('soon') { <span class="open open--soon">{{ i.t('st.soon') }}</span> · }
+                    @case ('closed') { <span class="open open--no">{{ i.t('st.closed') }}</span> · }
+                  }
+                  {{ T[m.type].label }}@if (m.address) { · {{ m.address }} }
+                </small>
+              </span>
+              <span class="row__dist">
+                <b>{{ km(m.distanceKm) }}</b>
+                <small>{{ i.t('common.min', { n: eta(m.distanceKm) }) }}</small>
+              </span>
+            </button>
+          } @empty {
+            <div class="state">
+              @if (svc.query()) {
+                <p>{{ i.t('fd.noMatch', { r: svc.radius(), q: svc.query() }) }}</p>
+                <button class="btn btn--ghost" type="button" (click)="setQuery('')">{{ i.t('fd.clear') }}</button>
+                <button class="btn btn--ghost" type="button" (click)="manualOpen.set(true)">{{ i.t('fd.manual') }}</button>
+              } @else {
+                <p>{{ i.t('fd.none', { r: svc.radius() }) }}</p>
+              }
+              @if (nextRadius(); as nr) {
+                <button class="btn btn--ghost" type="button" (click)="setRadius(nr)">{{ i.t('fd.expand', { r: nr }) }}</button>
+              }
+            </div>
+          }
+          @if (visible().length) {
+            <p class="count">{{ countLabel() }} · {{ i.t('fd.dataSource') }}</p>
+          }
+        }
+        @default {
+          @for (s of skeleton; track s) {
+            <div class="row row--skel">
+              <span class="badge sk"></span>
+              <span class="row__body"><span class="sk sk--a"></span><span class="sk sk--b"></span></span>
+            </div>
+          }
+        }
+      }
+    </div>
+  </section>
+
+  <main class="map">
+    @if (location.position(); as p) {
+      <app-map
+        [center]="p"
+        [mechanics]="visible()"
+        [selectedId]="selected()?.id ?? null"
+        [topPadding]="isMobile() ? 184 : 0"
+        [bottomPadding]="isMobile() ? sheetPx : 0"
+        (select)="onPin($event)"
+      />
+    }
+
+    @if (!isMobile() && selected(); as s) {
+      <article class="card">
+        <button class="card__close" type="button" [attr.aria-label]="i.t('common.close')" (click)="selectedId.set(null)">×</button>
+        <span class="tag" [style.background]="T[s.type].tint" [style.color]="T[s.type].color">{{ T[s.type].label }}</span>
+        <div>
+          <h3>{{ s.name }}</h3>
+          <p class="meta"><b class="mono">{{ km(s.distanceKm) }}</b><span>{{ i.t('common.drive', { n: eta(s.distanceKm) }) }}</span></p>
+        </div>
+        <dl class="facts">
+          @if (s.address) {
+            <div><dt>{{ i.t('f.address') }}</dt><dd>{{ s.address }}</dd></div>
+          }
+          @if (s.hours) {
+            <div><dt>{{ i.t('f.hours') }}</dt><dd>@for (h of hours(s.hours); track $index) {<span>{{ h }}</span>}</dd></div>
+          }
+          @if (s.phone) {
+            <div><dt>{{ i.t('f.phone') }}</dt><dd class="mono">{{ s.phone }}</dd></div>
+          }
+        </dl>
+        <div class="actions">
+          <a class="btn btn--ghost" [href]="dir(s)" target="_blank" rel="noopener">{{ i.t('act.navigate') }}</a>
+          @if (s.phone) {
+            <a class="btn btn--primary" [href]="tel(s.phone)">{{ i.t('act.call') }}</a>
+          } @else {
+            <a class="btn btn--ghost" [routerLink]="['/majstor', s.id]">{{ i.t('act.details') }}</a>
+          }
+        </div>
+      </article>
+    }
+  </main>
+</div>
+
+@if (manualOpen()) {
+  <app-manual-check (closed)="manualOpen.set(false)" />
+}

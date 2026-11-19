@@ -1,0 +1,53 @@
+@if (location.position(); as p) {
+  @if (mechanic(); as m) {
+    <main class="profile">
+      <div class="hero">
+        <app-map [center]="p" [mechanics]="mechList()" [selectedId]="m.id" [interactive]="false" [topPadding]="56" />
+        <a class="back" routerLink="/mapa" [attr.aria-label]="i.t('pf.back')">←</a>
+      </div>
+
+      <div class="body">
+        <div class="title">
+          <span class="tag" [style.background]="T[m.type].tint" [style.color]="T[m.type].color">{{ T[m.type].label }}</span>
+          <h1>{{ m.name }}</h1>
+          <p class="meta"><b class="mono">{{ km(m.distanceKm) }}</b><span>{{ i.t('common.drive', { n: eta(m.distanceKm) }) }}</span></p>
+        </div>
+
+        <dl class="facts">
+          @if (m.address) {
+            <div><dt>{{ i.t('f.address') }}</dt><dd>{{ m.address }}</dd></div>
+          }
+          @if (m.hours) {
+            <div><dt>{{ i.t('f.hours') }}</dt><dd>@for (h of hours(m.hours); track $index) {<span>{{ h }}</span>}</dd></div>
+          }
+          @if (m.phone) {
+            <div><dt>{{ i.t('f.phone') }}</dt><dd class="mono">{{ m.phone }}</dd></div>
+          }
+          @if (m.website) {
+            <div><dt>{{ i.t('f.website') }}</dt><dd><a [href]="siteUrl(m.website)" target="_blank" rel="noopener">{{ siteHost(m.website) }}</a></dd></div>
+          }
+        </dl>
+
+        @if (!m.phone && !m.hours) {
+          <p class="note">{{ i.t('pf.noData') }}</p>
+        }
+      </div>
+
+      <div class="actions">
+        <a class="btn btn--ghost" [href]="dir(m)" target="_blank" rel="noopener">{{ i.t('act.navigate') }}</a>
+        @if (m.phone) {
+          <a class="btn btn--primary" [href]="tel(m.phone)">{{ i.t('act.call') }}</a>
+        }
+      </div>
+    </main>
+  } @else {
+    <main class="state">
+      @if (svc.status() === 'loading' || svc.status() === 'idle') {
+        <p>{{ i.t('pf.loading') }}</p>
+      } @else {
+        <p>{{ i.t('pf.notFound') }}</p>
+        <a class="btn btn--ghost" routerLink="/mapa">{{ i.t('pf.backMap') }}</a>
+      }
+    </main>
+  }
+}

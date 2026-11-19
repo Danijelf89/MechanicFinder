@@ -1,0 +1,46 @@
+<main class="page">
+  <app-lang-switch class="lang" />
+
+  <div class="art" aria-hidden="true">
+    <span class="road road--a"></span>
+    <span class="road road--b"></span>
+    <span class="park"></span>
+    <span class="river"></span>
+    <span class="radius"></span>
+    <span class="me"></span>
+  </div>
+
+  <div class="panel">
+    <h1>{{ i.t('loc.title') }}</h1>
+    <p class="lead">{{ i.t('loc.lead') }}</p>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="actions">
+      <button class="btn btn--primary btn--block" type="button" (click)="useGps()" [disabled]="busy()">
+        {{ busy() ? i.t('loc.gpsBusy') : i.t('loc.gps') }}
+      </button>
+
+      @if (!manual()) {
+        <button class="btn btn--ghost btn--block" type="button" (click)="manual.set(true)">{{ i.t('loc.manual') }}</button>
+      } @else {
+        <form class="search" (submit)="search($event)">
+          <input
+            type="text"
+            [placeholder]="i.t('loc.placeholder')"
+            autocomplete="street-address"
+            [value]="query()"
+            (input)="query.set($any($event.target).value)"
+          />
+          <button class="btn btn--ghost" type="submit" [disabled]="busy()">{{ i.t('loc.search') }}</button>
+        </form>
+      }
+
+      @if (location.position(); as p) {
+        <a class="continue" routerLink="/mapa">{{ i.t('loc.continue', { label: p.label }) }}</a>
+      }
+    </div>
+  </div>
+</main>
