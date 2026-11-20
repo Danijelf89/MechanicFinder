@@ -2,7 +2,7 @@ import { TKey } from './sr';
 
 /** English. Typed against the Serbian keys, so a missing translation is a compile error. */
 export const en: Record<TKey, string> = {
-  'app.title': 'Find a Mechanic',
+  'app.title': 'ServisRadar – find a mechanic nearby',
   'lang.label': 'Language',
 
   'type.mehanicar': 'Mechanic',

@@ -1,6 +1,6 @@
 /** Srpski (latinica) – osnovni jezik. Ključevi odavde određuju šta mora da postoji u ostalim jezicima. */
 export const sr = {
-  'app.title': 'Pronađi majstora',
+  'app.title': 'ServisRadar – pronađi majstora u blizini',
   'lang.label': 'Jezik',
 
   'type.mehanicar': 'Mehaničar',

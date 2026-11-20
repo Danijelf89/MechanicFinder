@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://servisradar.rs/sitemap.xml
