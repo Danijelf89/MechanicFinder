@@ -165,7 +165,7 @@
         [selectedId]="selected()?.id ?? null"
         [topPadding]="isMobile() ? 170 : 0"
         [bottomPadding]="isMobile() && selected() ? 250 : 0"
-        [status]="isMobile() ? openState() : null"
+        [status]="openState()"
         (select)="onPin($event)"
       />
     }
