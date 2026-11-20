@@ -10,6 +10,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <!--
+    Cloudflare Web Analytics (bez kolačića). Token: Cloudflare dashboard -> Analytics & Logs -> Web Analytics.
+    Učitava se samo na produkcionom domenu, da se posete sa localhost-a ne broje.
+    Promene stranica u Angularu (npr. /mapa -> /majstor/...) beacon broji sam.
+  -->
+  <script>
+    (function () {
+      var CF_TOKEN = '33832ffbb7bc4d69b7ce8155cfd0c411';
+      if (!CF_TOKEN || !/(^|\.)servisradar\.rs$/.test(location.hostname)) return;
+      var s = document.createElement('script');
+      s.defer = true;
+      s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+      s.setAttribute('data-cf-beacon', JSON.stringify({ token: CF_TOKEN }));
+      document.head.appendChild(s);
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>
