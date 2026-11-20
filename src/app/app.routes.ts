@@ -1,14 +1,30 @@
 import { inject } from '@angular/core';
-import { Router, Routes } from '@angular/router';
+import { CanActivateFn, Router, Routes } from '@angular/router';
 import { LocationService } from './services/location.service';
+import { MechanicService } from './services/mechanic.service';
+import { SERVICE_TYPES, ServiceType } from './models/mechanic';
 
 export const ONBOARDING_KEY = 'mb.onboarding';
 
 const onboardingNotSeen = () =>
   localStorage.getItem(ONBOARDING_KEY) ? inject(Router).createUrlTree(['/lokacija']) : true;
 
-const hasLocation = () =>
-  inject(LocationService).position() ? true : inject(Router).createUrlTree(['/lokacija']);
+/**
+ * Mapa traži lokaciju. Link sa SEO stranica (/mapa?lat=..&lon=..&mesto=Novi%20Sad&tip=vulkanizer)
+ * sam postavlja lokaciju i filter, pa korisnik odmah vidi majstore u tom gradu.
+ */
+const hasLocation: CanActivateFn = route => {
+  const location = inject(LocationService);
+  const q = route.queryParamMap;
+  const lat = Number(q.get('lat'));
+  const lon = Number(q.get('lon'));
+  if (q.has('lat') && q.has('lon') && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+    location.set({ lat, lon, label: (q.get('mesto') ?? '').slice(0, 80) || lat.toFixed(4) + ', ' + lon.toFixed(4) });
+    const tip = q.get('tip');
+    if (tip && tip in SERVICE_TYPES) inject(MechanicService).filter.set(tip as ServiceType);
+  }
+  return location.position() ? true : inject(Router).createUrlTree(['/lokacija']);
+};
 
 export const routes: Routes = [
   {

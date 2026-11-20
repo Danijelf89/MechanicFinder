@@ -17,6 +17,7 @@ export const sr = {
   'onb.title': 'Stali ste na putu? Najbliži majstor je tu.',
   'onb.text': 'Pronađite mehaničara, limara ili vulkanizera u blizini i pozovite ih direktno.',
   'onb.start': 'Započni',
+  'onb.cities': 'Majstori po gradovima →',
 
   'loc.title': 'Gde se nalazite?',
   'loc.lead': 'Lokaciju koristimo samo da izračunamo udaljenost do majstora. Ne čuvamo je i ne delimo.',

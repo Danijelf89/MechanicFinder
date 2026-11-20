@@ -71,3 +71,9 @@ p { margin: 0; font-size: 16px; line-height: 1.45; color: #a5a9b0; }
   p { font-size: 18px; }
   .text .btn { width: auto; align-self: flex-start; padding: 0 36px; }
 }
+
+.cities { color: #a5a9b0; font-size: 14px; font-weight: 600; text-decoration: none; align-self: center; }
+.cities:hover { color: #fff; }
+@media (min-width: 900px) {
+  .cities { align-self: flex-start; }
+}

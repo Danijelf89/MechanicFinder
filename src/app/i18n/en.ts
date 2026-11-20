@@ -19,6 +19,7 @@ export const en: Record<TKey, string> = {
   'onb.title': 'Stuck on the road? The nearest mechanic is right here.',
   'onb.text': 'Find a mechanic, body shop or tyre shop nearby and call them directly.',
   'onb.start': 'Get started',
+  'onb.cities': 'Mechanics by city →',
 
   'loc.title': 'Where are you?',
   'loc.lead': 'We only use your location to work out the distance to mechanics. We don’t store or share it.',

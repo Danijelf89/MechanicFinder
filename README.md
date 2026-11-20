@@ -79,3 +79,16 @@ Majstori kojih nema u OpenStreetMap-u upisuju se u `public/majstori.json` i poja
 - `hours` je u OSM formatu (dani: Mo Tu We Th Fr Sa Su). Dani koji nisu navedeni računaju se kao neradni.
 - `address`, `phone`, `hours` i `website` nisu obavezni.
 - Ako ista radnja postoji i u OSM-u (ista vrsta, na manje od 50 m), prikazuje se samo ručno dodata.
+
+## SEO stranice po gradovima
+
+Pri svakom deploy-u (i automatski svakog ponedeljka) `scripts/seo/generate.mjs` pravi statične stranice
+`/auto-servis/<grad>/`, `/vulkanizer/<grad>/`, `/limar/<grad>/`, zatim `/gradovi/`, `/privatnost/` i `sitemap.xml`.
+
+- Gradovi su u `scripts/seo/cities.mjs` (naziv, lokativ, koordinate, radijus).
+- Stranica se pravi samo ako grad ima bar 3 radnje te vrste; radnje bez imena i tehnički pregledi se izostavljaju.
+- Podaci: OSM preko Geoapify-ja + `public/majstori.json`. Pravilo za vrstu (`classify`) postoji i u
+  `mechanic.service.ts` – menjati ih zajedno.
+- Kontakt za ispravke/uklanjanje: `CONTACT_EMAIL` u `generate.mjs`.
+- Lokalno: `npx ng build` pa `node scripts/seo/generate.mjs dist/majstor-blizu/browser`.
+- Link „Prikaži na mapi“ vodi na `/mapa?lat=..&lon=..&mesto=..&tip=..` – aplikacija sama postavi lokaciju i filter.

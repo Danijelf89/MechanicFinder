@@ -20,5 +20,7 @@
     <h1>{{ i.t('onb.title') }}</h1>
     <p>{{ i.t('onb.text') }}</p>
     <button class="btn btn--primary btn--block" type="button" (click)="start()">{{ i.t('onb.start') }}</button>
+    <!-- Obična veza (ne routerLink): /gradovi/ je statična SEO stranica van Angular aplikacije. -->
+    <a class="cities" href="/gradovi/">{{ i.t('onb.cities') }}</a>
   </div>
 </main>

@@ -6,6 +6,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Jednom nedeljno (ponedeljak 04:00 UTC) ponovo objavi sajt, da SEO stranice dobiju sveže podatke iz OSM-a.
+  schedule:
+    - cron: '0 4 * * 1'
 
 permissions:
   contents: read
@@ -31,6 +34,10 @@ jobs:
 
       # Sajt živi u korenu sopstvenog domena (servisradar.rs), pa je base-href "/"
       - run: npx ng build --configuration production --base-href /
+
+      # SEO stranice po gradovima (/auto-servis/novi-sad/ ...), /gradovi/, /privatnost/ i sitemap.xml.
+      # Ako podaci za neki grad ne mogu da se učitaju, korak pada i ostaje prethodna verzija sajta.
+      - run: node scripts/seo/generate.mjs dist/majstor-blizu/browser
 
       # GitHub Pages ne zna za Angular rute: direktno otvaranje /mapa bi dalo 404.
       # Kopija index.html kao 404.html učitava aplikaciju, a Angular router onda prikaže pravu stranu.
