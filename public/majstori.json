@@ -1,0 +1,12 @@
+[
+  {
+    "id": "auto-servis-boki-ns",
+    "name": "Auto servis Boki NS",
+    "type": "mehanicar",
+    "lat": 45.305506,
+    "lon": 19.8195415,
+    "address": "Olge Penavin 18, Novi Sad",
+    "phone": "060 040 8834",
+    "hours": "Mo-Fr 09:00-17:00; Sa 09:00-14:00"
+  }
+]

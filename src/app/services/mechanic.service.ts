@@ -40,6 +40,7 @@ export type SortMode = 'blizina' | 'otvoreni';
 export class MechanicService {
   private readonly http = inject(HttpClient);
   private lastKey = '';
+  private custom?: Promise<CustomMechanic[]>;
 
   readonly mechanics = signal<Mechanic[]>([]);
   readonly status = signal<LoadStatus>('idle');
@@ -72,12 +73,15 @@ export class MechanicService {
         const res = await firstValueFrom(
           this.http.get<GeoapifyResponse>(PLACES_URL, { params }).pipe(timeout(REQUEST_TIMEOUT_MS))
         );
+        const custom = (await this.customList()).map(c => customToMechanic(c, loc)).filter(m => m.distanceKm <= radiusKm);
         if (key !== this.lastKey) return; // stigao je noviji zahtev
         const seen = new Set<string>();
-        const list = res.features
+        const osm = res.features
           .map(f => toMechanic(f, loc))
           .filter(m => (seen.has(m.id) ? false : (seen.add(m.id), true)))
-          .sort((a, b) => a.distanceKm - b.distanceKm);
+          // Ručno dodat majstor ima prednost: OSM unos iste vrste na istom mestu je verovatno ista radnja.
+          .filter(m => !custom.some(c => c.type === m.type && haversineKm(c.lat, c.lon, m.lat, m.lon) < SAME_PLACE_KM));
+        const list = [...custom, ...osm].sort((a, b) => a.distanceKm - b.distanceKm);
         this.mechanics.set(list);
         this.status.set('ready');
         return;
@@ -87,6 +91,50 @@ export class MechanicService {
     }
     if (key === this.lastKey) this.status.set('error');
   }
+
+  /** Ručno dodati majstori iz public/majstori.json; učitavaju se jednom. Greška ne sme da pokvari OSM listu. */
+  private customList(): Promise<CustomMechanic[]> {
+    this.custom ??= firstValueFrom(this.http.get<CustomMechanic[]>(CUSTOM_URL).pipe(timeout(REQUEST_TIMEOUT_MS))).catch(
+      () => {
+        this.custom = undefined; // probaj ponovo pri sledećem učitavanju
+        return [];
+      }
+    );
+    return this.custom;
+  }
+}
+
+/** Ručno dodati majstori (public/majstori.json). */
+const CUSTOM_URL = 'majstori.json';
+/** Udaljenost na kojoj se OSM unos smatra istom radnjom kao ručno dodat. */
+const SAME_PLACE_KM = 0.05;
+
+interface CustomMechanic {
+  id: string;
+  name: string;
+  type: ServiceType;
+  lat: number;
+  lon: number;
+  address?: string;
+  phone?: string;
+  /** OSM format, npr. "Mo-Fr 09:00-18:00; Sa 09:00-15:00" */
+  hours?: string;
+  website?: string;
+}
+
+function customToMechanic(c: CustomMechanic, loc: UserLocation): Mechanic {
+  return {
+    id: 'custom-' + c.id,
+    name: c.name,
+    type: SERVICE_TYPES[c.type] ? c.type : 'mehanicar',
+    lat: c.lat,
+    lon: c.lon,
+    distanceKm: haversineKm(loc.lat, loc.lon, c.lat, c.lon),
+    address: c.address,
+    phone: c.phone,
+    hours: c.hours,
+    website: c.website
+  };
 }
 
 function sleep(ms: number): Promise<void> {

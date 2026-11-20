@@ -56,3 +56,26 @@ src/app/
   pages/onboarding|location|finder|profile
   utils/format.ts             km, procena vremena, radno vreme na srpskom
 ```
+
+## Ručno dodati majstori
+
+Majstori kojih nema u OpenStreetMap-u upisuju se u `public/majstori.json` i pojavljuju se odmah posle objave (push na `main`):
+
+```json
+{
+  "id": "jedinstven-kratak-naziv",
+  "name": "Naziv radnje",
+  "type": "vulkanizer",
+  "lat": 45.2999409,
+  "lon": 19.810381,
+  "address": "Ulica i broj, Grad",
+  "phone": "069 123 4567",
+  "hours": "Mo-Fr 09:00-18:00; Sa 09:00-15:00"
+}
+```
+
+- `type`: `mehanicar`, `limar` ili `vulkanizer`.
+- Koordinate: desni klik na mestu radnje u Google mapama → prvi red su koordinate (lat, lon).
+- `hours` je u OSM formatu (dani: Mo Tu We Th Fr Sa Su). Dani koji nisu navedeni računaju se kao neradni.
+- `address`, `phone`, `hours` i `website` nisu obavezni.
+- Ako ista radnja postoji i u OSM-u (ista vrsta, na manje od 50 m), prikazuje se samo ručno dodata.

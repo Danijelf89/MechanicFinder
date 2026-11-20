@@ -130,7 +130,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       if (m) {
         const p = map.latLngToContainerPoint([m.lat, m.lon]);
         const size = map.getSize();
-        if (p.x < 20 || p.x > size.x - 20 || p.y < top + 40 || p.y > size.y - bottom - 10) {
+        // Izabrani pin ima oznaku sa nazivom (do ~260px širine, centriranu na pinu) – i ona mora stati na ekran.
+        const halfLabel = Math.min(140, size.x / 2 - 10);
+        if (p.x < halfLabel || p.x > size.x - halfLabel || p.y < top + 40 || p.y > size.y - bottom - 10) {
           const targetY = top + (size.y - top - bottom) / 2;
           map.panBy([p.x - size.x / 2, p.y - targetY]);
         }
