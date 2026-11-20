@@ -130,6 +130,20 @@ a:hover { color: var(--accent-press); }
 .pin--sel::after { border-top-color: var(--ink); }
 .pin__label { max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
 .pin__km { font-family: var(--mono); font-size: 12px; opacity: .7; }
+/* Kružić statusa radnog vremena u gornjem desnom uglu pina. */
+.pin__st {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-sizing: content-box;
+}
+.pin__st--open { background: var(--green); }
+.pin__st--soon { background: #e0a100; }
+.pin__st--closed { background: var(--red); }
 .me-dot {
   position: absolute;
   left: -11px;

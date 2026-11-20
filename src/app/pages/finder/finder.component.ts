@@ -1,5 +1,5 @@
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { MapComponent } from '../../components/map/map.component';
 import { ManualCheckComponent } from '../../components/manual-check/manual-check.component';
 import { LogoComponent } from '../../components/logo/logo.component';
@@ -20,7 +20,6 @@ const MOBILE_QUERY = '(max-width: 899px)';
   styleUrl: './finder.component.css'
 })
 export class FinderComponent {
-  private readonly router = inject(Router);
   readonly location = inject(LocationService);
   readonly svc = inject(MechanicService);
   readonly i = inject(I18n);
@@ -33,7 +32,8 @@ export class FinderComponent {
   readonly selectedId = signal<string | null>(null);
   readonly manualOpen = signal(false);
   readonly isMobile = signal(window.matchMedia(MOBILE_QUERY).matches);
-  readonly sheetPx = Math.round(window.innerHeight * 0.46);
+  /** Telefon: lista majstora je skrivena i otvara se dugmetom preko mape. */
+  readonly listOpen = signal(false);
 
   /** Trenutno vreme, osvežava se svakog minuta da bi status "otvoreno" bio tačan. */
   readonly now = signal(new Date());
@@ -94,7 +94,10 @@ export class FinderComponent {
     });
 
     const mq = window.matchMedia(MOBILE_QUERY);
-    const onChange = (e: MediaQueryListEvent) => this.isMobile.set(e.matches);
+    const onChange = (e: MediaQueryListEvent) => {
+      this.isMobile.set(e.matches);
+      if (!e.matches) this.listOpen.set(false);
+    };
     mq.addEventListener('change', onChange);
     const tick = setInterval(() => this.now.set(new Date()), 60_000);
     inject(DestroyRef).onDestroy(() => {
@@ -128,9 +131,10 @@ export class FinderComponent {
     this.selectedId.set(null);
   }
 
+  /** Izbor iz liste ili sa mape: na telefonu se lista zatvara i majstor se prikazuje karticom na mapi. */
   pick(m: Mechanic): void {
-    if (this.isMobile()) this.router.navigate(['/majstor', m.id]);
-    else this.selectedId.set(m.id);
+    this.listOpen.set(false);
+    this.selectedId.set(m.id);
   }
 
   onPin(id: string): void {

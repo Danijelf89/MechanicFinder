@@ -36,6 +36,7 @@ export const sr = {
   'loc.err.notFound': 'Adresa nije pronađena. Pokušajte sa nazivom ulice i grada.',
 
   'fd.manual': 'Proveri majstora ručno',
+  'fd.list': 'Lista majstora',
   'fd.yourLoc': 'Vaša lokacija',
   'fd.change': 'Promeni',
   'fd.typeAria': 'Vrsta majstora',

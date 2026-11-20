@@ -38,6 +38,7 @@ export const en: Record<TKey, string> = {
   'loc.err.notFound': 'Address not found. Try a street name and city.',
 
   'fd.manual': 'Look up a mechanic',
+  'fd.list': 'Mechanics list',
   'fd.yourLoc': 'Your location',
   'fd.change': 'Change',
   'fd.typeAria': 'Mechanic type',

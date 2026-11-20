@@ -3,6 +3,7 @@ import * as L from 'leaflet';
 import { Mechanic, SERVICE_TYPES, UserLocation } from '../../models/mechanic';
 import { formatKm } from '../../utils/format';
 import { GEOAPIFY_KEY } from '../../config';
+import { OpenStatus } from '../../utils/hours';
 
 /** Geoapify stil pločica: klasičan OSM izgled – jedini sa nazivima skoro svih ulica i objekata. */
 const MAP_STYLE = 'osm-carto';
@@ -26,6 +27,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   /** Prostor koji pokrivaju elementi iznad mape (npr. mobilni bottom sheet), u px. */
   readonly topPadding = input(0);
   readonly bottomPadding = input(0);
+  /** Ako je zadat, svaki pin dobija kružić u boji statusa radnog vremena. */
+  readonly status = input<Map<string, OpenStatus> | null>(null);
   readonly select = output<string>();
 
   private readonly host = viewChild.required<ElementRef<HTMLDivElement>>('host');
@@ -35,7 +38,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private lastCenter?: UserLocation;
 
   constructor() {
-    effect(() => this.render(this.center(), this.mechanics(), this.selectedId(), this.topPadding(), this.bottomPadding()));
+    effect(() => {
+      this.status(); // pinovi se ponovo iscrtavaju kad se promeni status otvorenosti
+      this.render(this.center(), this.mechanics(), this.selectedId(), this.topPadding(), this.bottomPadding());
+    });
   }
 
   ngAfterViewInit(): void {
@@ -79,17 +85,21 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       zIndexOffset: -1000
     }).addTo(this.layer);
 
+    const status = this.status();
     for (const m of list) {
       const t = SERVICE_TYPES[m.type];
       const isSel = m.id === sel;
+      const st = status?.get(m.id);
+      const stDot = st ? '<span class="pin__st pin__st--' + st + '"></span>' : '';
       // Kompaktan pin (samo slovo) da se mapa ne zatrpa; izabrani se proširi u naziv + udaljenost.
       const html = isSel
         ? '<div class="pin pin--sel">' +
           '<span class="pin__dot" style="background:' + t.color + '">' + t.letter + '</span>' +
           '<span class="pin__label">' + escapeHtml(m.name) + '</span>' +
           '<span class="pin__km">' + formatKm(m.distanceKm) + '</span>' +
+          stDot +
           '</div>'
-        : '<div class="pin" style="--c:' + t.color + '"><span class="pin__dot" style="background:' + t.color + '">' + t.letter + '</span></div>';
+        : '<div class="pin" style="--c:' + t.color + '"><span class="pin__dot" style="background:' + t.color + '">' + t.letter + '</span>' + stDot + '</div>';
       const marker = L.marker([m.lat, m.lon], {
         icon: L.divIcon({ className: 'mb-icon', html, iconSize: [0, 0] }),
         zIndexOffset: isSel ? 1000 : 0,
@@ -115,8 +125,16 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         map.setView([c.lat, c.lon], 15);
       }
     } else if (sel) {
+      // Izabrani pin mora biti u vidljivom delu mape (između gornjih kontrola i kartice na dnu).
       const m = list.find(x => x.id === sel);
-      if (m && !map.getBounds().contains([m.lat, m.lon])) map.panTo([m.lat, m.lon]);
+      if (m) {
+        const p = map.latLngToContainerPoint([m.lat, m.lon]);
+        const size = map.getSize();
+        if (p.x < 20 || p.x > size.x - 20 || p.y < top + 40 || p.y > size.y - bottom - 10) {
+          const targetY = top + (size.y - top - bottom) / 2;
+          map.panBy([p.x - size.x / 2, p.y - targetY]);
+        }
+      }
     }
   }
 }

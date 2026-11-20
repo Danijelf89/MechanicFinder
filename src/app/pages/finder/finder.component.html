@@ -1,4 +1,4 @@
-<div class="finder">
+<div class="finder" [class.finder--list]="listOpen()">
   <header class="head">
     <app-logo />
     <app-lang-switch />
@@ -6,9 +6,17 @@
 
   <div class="top">
     <div class="top-row">
-      <button type="button" class="manual-btn" (click)="manualOpen.set(true)">
+      <!-- Samo na telefonu: lista majstora se otvara preko mape. -->
+      <button type="button" class="list-btn" [attr.aria-expanded]="listOpen()" (click)="listOpen.set(true)">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+        {{ i.t('fd.list') }}
+        @if (svc.status() === 'ready') {
+          <span class="list-btn__n">{{ visible().length }}</span>
+        }
+      </button>
+      <button type="button" class="manual-btn" [attr.aria-label]="i.t('fd.manual')" [title]="i.t('fd.manual')" (click)="manualOpen.set(true)">
         <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2" /><path d="M13 13l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
-        {{ i.t('fd.manual') }}
+        <span class="manual-btn__label">{{ i.t('fd.manual') }}</span>
       </button>
       <app-lang-switch class="lang-mobile" [float]="true" />
     </div>
@@ -34,8 +42,15 @@
     </div>
   </div>
 
-  <section class="sheet">
-    <div class="sheet__handle"></div>
+  @if (listOpen()) {
+    <div class="backdrop" (click)="listOpen.set(false)"></div>
+  }
+
+  <section class="sheet" [attr.aria-hidden]="isMobile() && !listOpen() ? 'true' : null">
+    <div class="sheet__top">
+      <h2>{{ i.t('fd.list') }}</h2>
+      <button type="button" class="sheet__close" [attr.aria-label]="i.t('common.close')" (click)="listOpen.set(false)">×</button>
+    </div>
     <div class="sheet__head">
       <div class="seg" role="radiogroup" [attr.aria-label]="i.t('fd.sortAria')">
         <button type="button" role="radio" [class.seg--on]="svc.sort() === 'blizina'" [attr.aria-checked]="svc.sort() === 'blizina'" (click)="setSort('blizina')">{{ i.t('fd.nearest') }}</button>
@@ -148,36 +163,53 @@
         [center]="p"
         [mechanics]="visible()"
         [selectedId]="selected()?.id ?? null"
-        [topPadding]="isMobile() ? 184 : 0"
-        [bottomPadding]="isMobile() ? sheetPx : 0"
+        [topPadding]="isMobile() ? 170 : 0"
+        [bottomPadding]="isMobile() && selected() ? 250 : 0"
+        [status]="isMobile() ? openState() : null"
         (select)="onPin($event)"
       />
     }
 
-    @if (!isMobile() && selected(); as s) {
+    @if (isMobile() && !selected()) {
+      <ul class="map-legend" [attr.aria-label]="i.t('fd.legendAria')">
+        <li><span class="map-legend__dot pin__st--open"></span>{{ i.t('st.open') }}</li>
+        <li><span class="map-legend__dot pin__st--soon"></span>{{ i.t('st.soonLegend') }}</li>
+        <li><span class="map-legend__dot pin__st--closed"></span>{{ i.t('st.closed') }}</li>
+      </ul>
+    }
+
+    @if (selected(); as s) {
       <article class="card">
         <button class="card__close" type="button" [attr.aria-label]="i.t('common.close')" (click)="selectedId.set(null)">×</button>
         <span class="tag" [style.background]="T[s.type].tint" [style.color]="T[s.type].color">{{ T[s.type].label }}</span>
         <div>
           <h3>{{ s.name }}</h3>
-          <p class="meta"><b class="mono">{{ km(s.distanceKm) }}</b><span>{{ i.t('common.drive', { n: eta(s.distanceKm) }) }}</span></p>
+          <p class="meta">
+            <b class="mono">{{ km(s.distanceKm) }}</b><span>{{ i.t('common.drive', { n: eta(s.distanceKm) }) }}</span>
+            @switch (openState().get(s.id)) {
+              @case ('open') { <span class="meta__st open open--yes">{{ i.t('st.open') }}</span> }
+              @case ('soon') { <span class="meta__st open open--soon">{{ i.t('st.soon') }}</span> }
+              @case ('closed') { <span class="meta__st open open--no">{{ i.t('st.closed') }}</span> }
+            }
+          </p>
         </div>
         <dl class="facts">
           @if (s.address) {
             <div><dt>{{ i.t('f.address') }}</dt><dd>{{ s.address }}</dd></div>
           }
           @if (s.hours) {
-            <div><dt>{{ i.t('f.hours') }}</dt><dd>@for (h of hours(s.hours); track $index) {<span>{{ h }}</span>}</dd></div>
+            <div class="facts__hours"><dt>{{ i.t('f.hours') }}</dt><dd>@for (h of hours(s.hours); track $index) {<span>{{ h }}</span>}</dd></div>
           }
           @if (s.phone) {
-            <div><dt>{{ i.t('f.phone') }}</dt><dd class="mono">{{ s.phone }}</dd></div>
+            <div class="facts__phone"><dt>{{ i.t('f.phone') }}</dt><dd class="mono">{{ s.phone }}</dd></div>
           }
         </dl>
         <div class="actions">
           <a class="btn btn--ghost" [href]="dir(s)" target="_blank" rel="noopener">{{ i.t('act.navigate') }}</a>
           @if (s.phone) {
             <a class="btn btn--primary" [href]="tel(s.phone)">{{ i.t('act.call') }}</a>
-          } @else {
+          }
+          @if (!s.phone || isMobile()) {
             <a class="btn btn--ghost" [routerLink]="['/majstor', s.id]">{{ i.t('act.details') }}</a>
           }
         </div>
